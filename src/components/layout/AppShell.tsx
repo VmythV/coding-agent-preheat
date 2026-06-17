@@ -1,12 +1,13 @@
 /** 应用整体布局：左侧导航 + 主内容区 */
 import { NavLink, Outlet } from "react-router-dom";
+import { CalendarClock, LayoutDashboard, ScrollText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app";
 
 const navItems = [
-  { to: "/", label: "首页" },
-  { to: "/tools", label: "本地工具" },
-  { to: "/ai", label: "AI 客户端" },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/schedules", label: "Schedules", icon: CalendarClock },
+  { to: "/logs", label: "Logs", icon: ScrollText },
 ];
 
 export function AppShell(): React.JSX.Element {
@@ -21,7 +22,7 @@ export function AppShell(): React.JSX.Element {
         )}
       >
         <h1 className="mb-4 text-lg font-semibold">
-          {sidebarOpen ? "Tauri 模板" : "T"}
+          {sidebarOpen ? "Agent Warmup" : "AW"}
         </h1>
         {navItems.map((item) => (
           <NavLink
@@ -30,18 +31,19 @@ export function AppShell(): React.JSX.Element {
             end={item.to === "/"}
             className={({ isActive }) =>
               cn(
-                "rounded px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2 rounded px-3 py-2 text-sm transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-muted",
               )
             }
           >
-            {sidebarOpen ? item.label : item.label.slice(0, 1)}
+            <item.icon size={16} />
+            {sidebarOpen && <span>{item.label}</span>}
           </NavLink>
         ))}
       </aside>
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-4 sm:p-6">
         <Outlet />
       </main>
     </div>

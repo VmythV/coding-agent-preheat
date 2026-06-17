@@ -24,3 +24,4 @@ pub struct ChatRequest {
     pub messages: Vec<ChatMessage>,
     pub temperature: Option<f32>,
 }
+pub mod warmup;

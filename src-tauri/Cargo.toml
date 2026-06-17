@@ -1,13 +1,13 @@
 [package]
-name = "desktop-tauri-template"
+name = "coding-agent-preheat"
 version = "0.1.0"
-description = "A Tauri 2.x desktop template (React + TS, business / tools / AI)"
+description = "Local macOS warmup scheduler for coding agents"
 authors = ["you"]
 edition = "2021"
 rust-version = "1.77"
 
 [lib]
-name = "desktop_tauri_template_lib"
+name = "coding_agent_preheat_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -15,7 +15,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 # ===== Tauri 核心 =====
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 
 # ===== 官方插件 =====
 tauri-plugin-fs = "2"
@@ -26,13 +26,17 @@ tauri-plugin-store = "2"
 tauri-plugin-log = "2"
 tauri-plugin-os = "2"
 tauri-plugin-opener = "2"
+tauri-plugin-autostart = "2"
 
 # ===== 通用依赖 =====
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "1"
 log = "0.4"
-tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "process", "time"] }
+chrono = { version = "0.4", features = ["serde", "clock"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+shell-words = "1"
 
 [profile.release]
 panic = "abort"

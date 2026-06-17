@@ -36,7 +36,6 @@ coverage
 # ===== Rust / Tauri =====
 src-tauri/target/
 src-tauri/gen/
-src-tauri/Cargo.lock
 src-tauri/WixTools/
 
 # ===== Vite cache =====

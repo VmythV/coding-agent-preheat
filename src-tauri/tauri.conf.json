@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "DesktopTauriTemplate",
+  "productName": "coding-agent-preheat",
   "version": "0.1.0",
-  "identifier": "com.yourname.desktop-tauri-template",
+  "identifier": "com.anpfse.coding-agent-preheat",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Desktop Tauri Template",
+        "title": "coding-agent-preheat",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
@@ -38,8 +38,8 @@
       "icons/icon.ico"
     ],
     "category": "DeveloperTool",
-    "shortDescription": "Tauri 2.x desktop template",
-    "longDescription": "A modular Tauri 2.x template supporting business apps, local tools, and AI clients.",
+    "shortDescription": "Local warmup scheduler for coding agents",
+    "longDescription": "A macOS desktop utility that runs local Claude, Codex, or custom coding-agent commands on fixed schedules and records execution logs.",
     "macOS": {
       "minimumSystemVersion": "10.15"
     },

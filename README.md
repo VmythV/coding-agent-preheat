@@ -1,79 +1,50 @@
-# Desktop Tauri Template
+# Coding Agent Preheat
 
-> Tauri 2.x + React 19 + TypeScript 桌面端初始模板，覆盖**通用业务 / 本地工具 / AI 客户端**三类场景。
+macOS 本地桌面工具，用固定时间执行 Claude、Codex 或自定义 Coding Agent 命令，帮助把本地 CLI 的使用窗口触发点放到更可控的时间，并保留每次触发日志。
 
-## 技术栈
+## Features
 
-| 层级 | 选型 |
-|---|---|
-| 桌面运行时 | Tauri 2.x |
-| 前端 | React 19 + TypeScript 5+ + Vite 7 |
-| 路由 | React Router 7 |
-| 状态管理 | Zustand + TanStack Query |
-| 样式 | Tailwind CSS 3 + shadcn/ui（占位 CSS 变量） |
-| 后端 | Rust（模块化：commands / services / models） |
+- 多 Agent 配置，可独立启用或停用
+- 内置 Claude Code 和 Codex 默认命令模板
+- Daily 5 小时预热触发
+- Weekly 触发配置
+- 自定义时间保存为快捷 preset
+- 手动触发命令
+- 本地 JSON 持久化配置和执行日志
+- macOS 系统托盘和开机自启插件
 
-## 快速开始
+## Default Commands
+
+Claude Code:
+
+```bash
+claude -p "hi" --model haiku --no-session-persistence
+```
+
+Codex:
+
+```bash
+codex exec --ephemeral --skip-git-repo-check "hi"
+```
+
+## Development
 
 ```bash
 pnpm install
-pnpm tauri:dev      # 启动开发模式
-pnpm tauri:build    # 打包发布版本
+pnpm tauri:dev
 ```
 
-## 目录结构
+TypeScript check:
 
-```
-src/                      # React 前端
-  ├── pages/              # 页面（home / tools / ai）
-  ├── components/         # 通用组件（layout / ui）
-  ├── features/           # 业务功能模块
-  ├── lib/                # 基础设施
-  │   ├── tauri/          # ★ Tauri invoke 封装层
-  │   ├── http.ts         # HTTP 客户端
-  │   └── env.ts          # 平台判断
-  ├── stores/             # Zustand 全局状态
-  └── router.tsx
-
-src-tauri/                # Rust 后端
-  ├── src/
-  │   ├── lib.rs          # 应用入口 + plugin/command 注册
-  │   ├── commands/       # Tauri command 薄壳
-  │   ├── services/       # 业务服务层
-  │   ├── models/         # DTO
-  │   ├── error.rs        # 统一错误类型
-  │   └── config.rs       # 配置加载
-  ├── capabilities/       # 权限声明
-  │   ├── default.json    # 基础权限
-  │   ├── tools.json      # 本地工具场景
-  │   └── ai.json         # AI 客户端场景
-  └── tauri.conf.json
+```bash
+pnpm typecheck
 ```
 
-## 已注册插件
+Rust check:
 
-- `tauri-plugin-fs` 文件系统
-- `tauri-plugin-dialog` 对话框
-- `tauri-plugin-shell` Shell 命令
-- `tauri-plugin-http` HTTP（支持自定义 header，绕过 CORS）
-- `tauri-plugin-store` 键值存储
-- `tauri-plugin-log` 日志
-- `tauri-plugin-os` 系统信息
-- `tauri-plugin-opener` 打开 URL/文件
+```bash
+cd src-tauri
+cargo check
+```
 
-## 已注册 Command
-
-| 名称 | 模块 | 说明 |
-|---|---|---|
-| `greet` | demo | 示例 command |
-| `fs_read_text_file` / `fs_write_text_file` / `fs_exists` | commands/fs | 文件操作 |
-| `shell_run` | commands/shell | 执行外部命令 |
-| `system_info` | commands/system | 系统信息 |
-| `ai_chat` / `ai_cancel_chat` | commands/ai | AI 对话（占位） |
-
-## 下一步
-
-- 启用 shadcn/ui：`pnpm dlx shadcn@latest init`
-- 接入 LLM：在 `services/ai_service.rs` 中实现 `chat()`
-- 添加自动更新：`tauri-plugin-updater`
-- CI：参考 `.github/workflows/release.yml` 模板
+This repository includes a project-level Cargo config at `.cargo/config.toml` that uses Aliyun's sparse crates.io mirror to speed up dependency downloads in China.

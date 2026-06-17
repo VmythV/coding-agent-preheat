@@ -1,8 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import HomePage from "@/pages/home";
-import ToolsPage from "@/pages/tools";
-import AIPage from "@/pages/ai";
+import LogsPage from "@/pages/logs";
+import SchedulesPage from "@/pages/schedules";
 
 const router = createBrowserRouter([
   {
@@ -10,8 +10,8 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "tools", element: <ToolsPage /> },
-      { path: "ai", element: <AIPage /> },
+      { path: "schedules", element: <SchedulesPage /> },
+      { path: "logs", element: <LogsPage /> },
     ],
   },
 ]);
