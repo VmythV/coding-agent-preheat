@@ -11,7 +11,7 @@ use commands::{ai, fs, shell, system, warmup};
 use services::warmup_service::{spawn_scheduler, WarmupState};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{Manager, Wry};
+use tauri::{Manager, WindowEvent, Wry};
 use tauri_plugin_autostart::MacosLauncher;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -38,6 +38,12 @@ pub fn run() {
             app.manage(state);
             setup_tray(app)?;
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
         })
         // ===== Command 注册 =====
         .invoke_handler(tauri::generate_handler![

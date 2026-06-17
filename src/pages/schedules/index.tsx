@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus, Save, Star, Trash2 } from "lucide-react";
 import type React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   type AgentConfig,
@@ -54,6 +54,8 @@ export default function SchedulesPage(): React.JSX.Element {
     [agents, selectedId],
   );
   const [draft, setDraft] = useState<AgentConfig>(selectedAgent ?? emptyAgent);
+  const argsRef = useRef<HTMLTextAreaElement>(null);
+  const envRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (selectedAgent) {
@@ -124,6 +126,14 @@ export default function SchedulesPage(): React.JSX.Element {
     });
   }
 
+  function buildAgentForSave(): AgentConfig {
+    return {
+      ...draft,
+      args: parseArgs(argsRef.current?.value ?? ""),
+      env: parseEnv(envRef.current?.value ?? ""),
+    };
+  }
+
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
       <header className="flex flex-col gap-3 rounded-md border bg-background p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -149,13 +159,13 @@ export default function SchedulesPage(): React.JSX.Element {
                   setDraft({ ...draft, enabled: event.currentTarget.checked })
                 }
               />
-              Enabled
+              Enable scheduler
             </label>
           </div>
         </div>
         <Button
           size="sm"
-          onClick={() => saveAgent.mutate(draft)}
+          onClick={() => saveAgent.mutate(buildAgentForSave())}
           disabled={saveAgent.isPending}
         >
           <Save className="mr-2" size={15} />
@@ -171,6 +181,9 @@ export default function SchedulesPage(): React.JSX.Element {
               onChange={(event) =>
                 setDraft({ ...draft, command: event.currentTarget.value })
               }
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="input-base font-mono"
             />
           </Field>
@@ -181,6 +194,9 @@ export default function SchedulesPage(): React.JSX.Element {
                 setDraft({ ...draft, cwd: event.currentTarget.value || null })
               }
               placeholder="Optional"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="input-base"
             />
           </Field>
@@ -200,37 +216,26 @@ export default function SchedulesPage(): React.JSX.Element {
           </Field>
           <Field label="Arguments">
             <textarea
-              value={draft.args.join("\n")}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  args: event.currentTarget.value
-                    .split("\n")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                })
-              }
+              key={`args-${draft.id}`}
+              ref={argsRef}
+              defaultValue={draft.args.join("\n")}
               rows={3}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="input-base min-h-24 font-mono"
             />
           </Field>
           <Field label="Environment">
             <textarea
-              value={draft.env.map((item) => `${item.key}=${item.value}`).join("\n")}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  env: event.currentTarget.value
-                    .split("\n")
-                    .map((line) => {
-                      const [key, ...rest] = line.split("=");
-                      return { key: key?.trim() ?? "", value: rest.join("=") };
-                    })
-                    .filter((item) => item.key),
-                })
-              }
+              key={`env-${draft.id}`}
+              ref={envRef}
+              defaultValue={draft.env.map((item) => `${item.key}=${item.value}`).join("\n")}
               placeholder="KEY=value"
               rows={3}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="input-base min-h-24 font-mono"
             />
           </Field>
@@ -384,6 +389,9 @@ function ScheduleRow({
           type="time"
           value={schedule.time}
           onChange={(event) => onChange({ time: event.currentTarget.value })}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           className="input-base h-9"
         />
       </Field>
@@ -461,4 +469,21 @@ function createSchedule(triggerType: TriggerType): Schedule {
     daysOfWeek: weekly ? [1] : [1, 2, 3, 4, 5],
     lastTriggeredAt: null,
   };
+}
+
+function parseArgs(value: string): string[] {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseEnv(value: string): AgentConfig["env"] {
+  return value
+    .split("\n")
+    .map((line) => {
+      const [key, ...rest] = line.split("=");
+      return { key: key?.trim() ?? "", value: rest.join("=") };
+    })
+    .filter((item) => item.key);
 }
