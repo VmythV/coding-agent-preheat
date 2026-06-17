@@ -55,6 +55,7 @@ pub enum ScheduleKind {
 #[serde(rename_all = "snake_case")]
 pub enum TriggerType {
     Manual,
+    #[serde(rename = "warmup_5h", alias = "warmup5h")]
     Warmup5h,
     Weekly,
 }

@@ -205,7 +205,7 @@ impl WarmupState {
         let start = Instant::now();
         let command_line = command_line(&agent.command, &agent.args);
         let mut command = Command::new("/bin/zsh");
-        command.arg("-lc").arg(&command_line);
+        command.arg("-lc").arg(shell_script(&command_line));
         if let Some(cwd) = &agent.cwd {
             if !cwd.trim().is_empty() {
                 command.current_dir(cwd);
@@ -411,6 +411,18 @@ fn command_line(command: &str, args: &[String]) -> String {
     let mut parts = vec![shell_words::quote(command).to_string()];
     parts.extend(args.iter().map(|arg| shell_words::quote(arg).to_string()));
     parts.join(" ")
+}
+
+fn shell_script(command_line: &str) -> String {
+    format!(
+        r#"for file in "$HOME/.zshenv" "$HOME/.zprofile" "$HOME/.zshrc" "$HOME/.profile"; do
+  [ -r "$file" ] && source "$file" >/dev/null 2>&1
+done
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin:$HOME/bin:$PATH"
+exec {}
+"#,
+        command_line
+    )
 }
 
 fn redact(value: String) -> String {
