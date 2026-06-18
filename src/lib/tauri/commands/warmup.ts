@@ -3,7 +3,13 @@ import { invoke } from "@tauri-apps/api/core";
 export type AgentKind = "claude" | "codex" | "custom";
 export type ScheduleKind = "daily" | "weekly";
 export type TriggerType = "manual" | "warmup_5h" | "weekly";
-export type RunStatus = "running" | "success" | "failed" | "timeout" | "skipped";
+export type RunStatus =
+  | "running"
+  | "success"
+  | "failed"
+  | "timeout"
+  | "skipped";
+export type LogClearScope = "all" | "older_than_30_days" | "older_than_7_days";
 
 export interface EnvVar {
   key: string;
@@ -70,6 +76,8 @@ export const warmupCommands = {
   triggerAgent: (agentId: string, triggerType: TriggerType) =>
     invoke<RunLog>("warmup_trigger_agent", { agentId, triggerType }),
   listLogs: () => invoke<RunLog[]>("warmup_list_logs"),
+  clearLogs: (scope: LogClearScope) =>
+    invoke<number>("warmup_clear_logs", { scope }),
   listPresets: () => invoke<TimePreset[]>("warmup_list_presets"),
   savePreset: (preset: TimePreset) =>
     invoke<TimePreset>("warmup_save_preset", { preset }),

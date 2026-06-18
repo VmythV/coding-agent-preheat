@@ -9,6 +9,7 @@ export type {
   AgentConfig,
   AgentKind,
   EnvVar,
+  LogClearScope,
   RunLog,
   RunStatus,
   Schedule,

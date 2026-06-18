@@ -22,7 +22,7 @@ export function AppShell(): React.JSX.Element {
         )}
       >
         <h1 className="mb-4 text-lg font-semibold">
-          {sidebarOpen ? "Agent Warmup" : "AW"}
+          {sidebarOpen ? "coding-agent-preheat" : "cap"}
         </h1>
         {navItems.map((item) => (
           <NavLink

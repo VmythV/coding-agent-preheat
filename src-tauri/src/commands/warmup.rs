@@ -1,9 +1,11 @@
 use crate::error::AppResult;
-use crate::models::warmup::{AgentConfig, RunLog, TimePreset, TriggerType};
+use crate::models::warmup::{AgentConfig, LogClearScope, RunLog, TimePreset, TriggerType};
 use crate::services::warmup_service::WarmupState;
 
 #[tauri::command]
-pub async fn warmup_list_agents(state: tauri::State<'_, WarmupState>) -> AppResult<Vec<AgentConfig>> {
+pub async fn warmup_list_agents(
+    state: tauri::State<'_, WarmupState>,
+) -> AppResult<Vec<AgentConfig>> {
     Ok(state.list_agents().await)
 }
 
@@ -16,7 +18,10 @@ pub async fn warmup_save_agent(
 }
 
 #[tauri::command]
-pub async fn warmup_delete_agent(state: tauri::State<'_, WarmupState>, id: String) -> AppResult<()> {
+pub async fn warmup_delete_agent(
+    state: tauri::State<'_, WarmupState>,
+    id: String,
+) -> AppResult<()> {
     state.delete_agent(id).await
 }
 
@@ -35,7 +40,17 @@ pub async fn warmup_list_logs(state: tauri::State<'_, WarmupState>) -> AppResult
 }
 
 #[tauri::command]
-pub async fn warmup_list_presets(state: tauri::State<'_, WarmupState>) -> AppResult<Vec<TimePreset>> {
+pub async fn warmup_clear_logs(
+    state: tauri::State<'_, WarmupState>,
+    scope: LogClearScope,
+) -> AppResult<usize> {
+    state.clear_logs(scope).await
+}
+
+#[tauri::command]
+pub async fn warmup_list_presets(
+    state: tauri::State<'_, WarmupState>,
+) -> AppResult<Vec<TimePreset>> {
     Ok(state.list_presets().await)
 }
 
@@ -48,6 +63,9 @@ pub async fn warmup_save_preset(
 }
 
 #[tauri::command]
-pub async fn warmup_delete_preset(state: tauri::State<'_, WarmupState>, id: String) -> AppResult<()> {
+pub async fn warmup_delete_preset(
+    state: tauri::State<'_, WarmupState>,
+    id: String,
+) -> AppResult<()> {
     state.delete_preset(id).await
 }

@@ -54,16 +54,28 @@ export default function HomePage(): React.JSX.Element {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Coding Agent Warmup</h1>
+        <h1 className="text-2xl font-semibold">coding-agent-preheat</h1>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Local macOS scheduler for Claude, Codex, and custom coding agents.
         </p>
       </header>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <Metric icon={<Power size={18} />} label="Enabled agents" value={`${enabledCount}/${agents.length}`} />
-        <Metric icon={<Activity size={18} />} label="Successful runs" value={String(successCount)} />
-        <Metric icon={<Clock size={18} />} label="Failures" value={String(failureCount)} />
+        <Metric
+          icon={<Power size={18} />}
+          label="Enabled agents"
+          value={`${enabledCount}/${agents.length}`}
+        />
+        <Metric
+          icon={<Activity size={18} />}
+          label="Successful runs"
+          value={String(successCount)}
+        />
+        <Metric
+          icon={<Clock size={18} />}
+          label="Failures"
+          value={String(failureCount)}
+        />
       </section>
 
       <section className="overflow-hidden rounded-md border">
@@ -145,14 +157,17 @@ function AgentRow({
           {formatCommand(agent)}
         </p>
       </div>
-      <p className="text-sm text-muted-foreground">{nextScheduleSummary(agent)}</p>
+      <p className="text-sm text-muted-foreground">
+        {nextScheduleSummary(agent)}
+      </p>
       <div className="text-sm">
         {lastLog ? (
           <>
             <span
               className={cn(
                 "mr-2 inline-flex rounded px-2 py-0.5 text-xs",
-                lastLog.status === "success" && "bg-emerald-50 text-emerald-700",
+                lastLog.status === "success" &&
+                  "bg-emerald-50 text-emerald-700",
                 lastLog.status !== "success" && "bg-zinc-100 text-zinc-700",
               )}
             >

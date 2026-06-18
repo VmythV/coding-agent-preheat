@@ -1,4 +1,4 @@
-# Coding Agent Preheat
+# coding-agent-preheat
 
 macOS 本地桌面工具，用固定时间执行 Claude、Codex 或自定义 Coding Agent 命令，帮助把本地 CLI 的使用窗口触发点放到更可控的时间，并保留每次触发日志。
 

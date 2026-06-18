@@ -93,6 +93,14 @@ pub struct RunLog {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+pub enum LogClearScope {
+    All,
+    OlderThan30Days,
+    OlderThan7Days,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RunStatus {
     Running,
     Success,

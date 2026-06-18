@@ -1,9 +1,9 @@
 use crate::error::{AppError, AppResult};
 use crate::models::warmup::{
-    AgentConfig, AgentKind, EnvVar, RunLog, RunStatus, Schedule, ScheduleKind, StoreData,
-    TimePreset, TriggerType,
+    AgentConfig, AgentKind, EnvVar, LogClearScope, RunLog, RunStatus, Schedule, ScheduleKind,
+    StoreData, TimePreset, TriggerType,
 };
-use chrono::{Datelike, Local};
+use chrono::{DateTime, Datelike, Duration as ChronoDuration, Local};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::process::Stdio;
@@ -63,6 +63,25 @@ impl WarmupState {
         logs
     }
 
+    pub async fn clear_logs(&self, scope: LogClearScope) -> AppResult<usize> {
+        let mut data = self.data.write().await;
+        let original_count = data.logs.len();
+        match scope {
+            LogClearScope::All => data.logs.clear(),
+            LogClearScope::OlderThan30Days => {
+                let cutoff = Local::now() - ChronoDuration::days(30);
+                data.logs.retain(|log| keep_log_after_cutoff(log, cutoff));
+            }
+            LogClearScope::OlderThan7Days => {
+                let cutoff = Local::now() - ChronoDuration::days(7);
+                data.logs.retain(|log| keep_log_after_cutoff(log, cutoff));
+            }
+        }
+        let removed_count = original_count.saturating_sub(data.logs.len());
+        self.persist_locked(&data)?;
+        Ok(removed_count)
+    }
+
     pub async fn save_agent(&self, mut agent: AgentConfig) -> AppResult<AgentConfig> {
         let now = now_rfc3339();
         if agent.id.trim().is_empty() {
@@ -110,7 +129,11 @@ impl WarmupState {
         self.persist_locked(&data)
     }
 
-    pub async fn trigger_agent(&self, agent_id: String, trigger_type: TriggerType) -> AppResult<RunLog> {
+    pub async fn trigger_agent(
+        &self,
+        agent_id: String,
+        trigger_type: TriggerType,
+    ) -> AppResult<RunLog> {
         let agent = self
             .data
             .read()
@@ -137,7 +160,11 @@ impl WarmupState {
             let mut changed = false;
             for agent in data.agents.iter_mut().filter(|agent| agent.enabled) {
                 let mut agent_due: Vec<TriggerType> = Vec::new();
-                for schedule in agent.schedules.iter_mut().filter(|schedule| schedule.enabled) {
+                for schedule in agent
+                    .schedules
+                    .iter_mut()
+                    .filter(|schedule| schedule.enabled)
+                {
                     if schedule.time != current_time {
                         continue;
                     }
@@ -145,8 +172,10 @@ impl WarmupState {
                         continue;
                     }
                     let is_due = match schedule.kind {
-                        ScheduleKind::Daily => schedule.days_of_week.is_empty()
-                            || schedule.days_of_week.contains(&weekday),
+                        ScheduleKind::Daily => {
+                            schedule.days_of_week.is_empty()
+                                || schedule.days_of_week.contains(&weekday)
+                        }
                         ScheduleKind::Weekly => schedule.days_of_week.contains(&weekday),
                     };
                     if !is_due {
@@ -200,7 +229,11 @@ impl WarmupState {
         result
     }
 
-    async fn execute_agent(&self, agent: AgentConfig, trigger_type: TriggerType) -> AppResult<RunLog> {
+    async fn execute_agent(
+        &self,
+        agent: AgentConfig,
+        trigger_type: TriggerType,
+    ) -> AppResult<RunLog> {
         let started_at = now_rfc3339();
         let start = Instant::now();
         let command_line = command_line(&agent.command, &agent.args);
@@ -218,7 +251,11 @@ impl WarmupState {
         }
         command.stdout(Stdio::piped()).stderr(Stdio::piped());
 
-        let run = timeout(Duration::from_secs(agent.timeout_seconds.max(1)), command.output()).await;
+        let run = timeout(
+            Duration::from_secs(agent.timeout_seconds.max(1)),
+            command.output(),
+        )
+        .await;
         let mut log = RunLog {
             id: Uuid::new_v4().to_string(),
             agent_id: agent.id,
@@ -315,10 +352,34 @@ fn default_store() -> StoreData {
     StoreData {
         agents: vec![default_claude_agent(&now), default_codex_agent(&now)],
         presets: vec![
-            preset("Morning", ScheduleKind::Daily, "06:00", vec![1, 2, 3, 4, 5], &now),
-            preset("Midday", ScheduleKind::Daily, "11:00", vec![1, 2, 3, 4, 5], &now),
-            preset("Afternoon", ScheduleKind::Daily, "16:00", vec![1, 2, 3, 4, 5], &now),
-            preset("Weekly Monday", ScheduleKind::Weekly, "06:00", vec![1], &now),
+            preset(
+                "Morning",
+                ScheduleKind::Daily,
+                "06:00",
+                vec![1, 2, 3, 4, 5],
+                &now,
+            ),
+            preset(
+                "Midday",
+                ScheduleKind::Daily,
+                "11:00",
+                vec![1, 2, 3, 4, 5],
+                &now,
+            ),
+            preset(
+                "Afternoon",
+                ScheduleKind::Daily,
+                "16:00",
+                vec![1, 2, 3, 4, 5],
+                &now,
+            ),
+            preset(
+                "Weekly Monday",
+                ScheduleKind::Weekly,
+                "06:00",
+                vec![1],
+                &now,
+            ),
         ],
         logs: Vec::new(),
     }
@@ -392,7 +453,13 @@ fn default_schedules() -> Vec<Schedule> {
     ]
 }
 
-fn preset(label: &str, kind: ScheduleKind, time: &str, days_of_week: Vec<u8>, now: &str) -> TimePreset {
+fn preset(
+    label: &str,
+    kind: ScheduleKind,
+    time: &str,
+    days_of_week: Vec<u8>,
+    now: &str,
+) -> TimePreset {
     TimePreset {
         id: Uuid::new_v4().to_string(),
         label: label.to_string(),
@@ -405,6 +472,12 @@ fn preset(label: &str, kind: ScheduleKind, time: &str, days_of_week: Vec<u8>, no
 
 fn now_rfc3339() -> String {
     Local::now().to_rfc3339()
+}
+
+fn keep_log_after_cutoff(log: &RunLog, cutoff: DateTime<Local>) -> bool {
+    DateTime::parse_from_rfc3339(&log.started_at)
+        .map(|started_at| started_at.with_timezone(&Local) >= cutoff)
+        .unwrap_or(true)
 }
 
 fn command_line(command: &str, args: &[String]) -> String {

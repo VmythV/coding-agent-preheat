@@ -65,6 +65,7 @@ pub fn run() {
             warmup::warmup_delete_agent,
             warmup::warmup_trigger_agent,
             warmup::warmup_list_logs,
+            warmup::warmup_clear_logs,
             warmup::warmup_list_presets,
             warmup::warmup_save_preset,
             warmup::warmup_delete_preset,
